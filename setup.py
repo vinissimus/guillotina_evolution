@@ -25,7 +25,10 @@ setup(
     ],
     extras_require={
         'test': [
-            'pytest'
+            'pytest',
+            'pytest-asyncio',
+            'pytest-cov',
+            'coverage',
         ]
     },
     classifiers=[],

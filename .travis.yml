@@ -1,0 +1,13 @@
+dist: bionic
+language: python
+python:
+  - "3.6"
+install:
+  - pip install flake8 codecov black
+  - pip install -e .[test]
+script:
+  - flake8 guillotina_evolution --config=setup.cfg
+  - black guillotina_evolution --check
+  - pytest --cov=guillotina_evolution -v --cov-report term-missing guillotina_evolution
+after_success:
+  - codecov

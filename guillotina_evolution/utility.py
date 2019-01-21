@@ -22,6 +22,7 @@ class EvolutionUtility(object):
     def register(self, gen: int, evolver: Awaitable):
         if gen in self._evolvers:
             raise Exception(f"Evolver for generation '{gen}' already exist")
+
         self._evolvers[gen] = evolver
 
     async def evolve(self, container: IContainer):
