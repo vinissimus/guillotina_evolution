@@ -26,6 +26,10 @@ async def test_evolve(loop, environment):
             item._p_register()
 
     utility = get_utility(IEvolutionUtility)
+
+    async with managed_transaction(request=request):
+        utility._update_curr_gen(0)
+
     utility.register(1, ensure_all_items_have_title)
 
     # Evolve
@@ -61,6 +65,10 @@ async def test_evolve_command(environment):
             item._p_register()
 
     utility = get_utility(IEvolutionUtility)
+
+    async with managed_transaction(request=request):
+        utility._update_curr_gen(0)
+
     utility.register(1, ensure_all_items_have_title)
 
     command = EvolveCommand()

@@ -59,7 +59,14 @@ class EvolutionUtility(object):
     def _get_registry(self):
         request = get_current_request()
         registry = request.container_settings
-        if GENERATION_KEY not in registry:
-            registry[GENERATION_KEY] = 0
+        if GENERATION_KEY not in registry:  # first time we run guillotina_evolution
+            registry[GENERATION_KEY] = self._get_greatest_registered_gen()
             registry._p_register()
         return registry
+
+    def _get_greatest_registered_gen(self):
+        gens = sorted(self._evolvers.keys())
+        if len(gens) > 0:
+            return gens[-1]
+        else:
+            return 0
