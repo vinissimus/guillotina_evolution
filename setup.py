@@ -9,7 +9,7 @@ except IOError:
 
 setup(
     name='guillotina_evolution',
-    version="0.2.0",
+    version="0.2.1",
     description=' ',
     long_description=README,
     install_requires=[
@@ -31,7 +31,14 @@ setup(
             'coverage',
         ]
     },
-    classifiers=[],
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+    ],
     entry_points={
     }
 )

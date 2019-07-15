@@ -71,12 +71,18 @@ async def test_evolve_command(environment):
             item.title = ""
             item._p_register()
 
+    async def ensure_all_items_have_attribute_description(container):
+        async for item in container.async_values():
+            item.description = "patata"
+            item._p_register()
+
     utility = get_utility(IEvolutionUtility)
 
     async with managed_transaction(request=request):
         utility._update_curr_gen(0)
 
     utility.register(1, ensure_all_items_have_attribute_title)
+    utility.register(2, ensure_all_items_have_attribute_description)
 
     command = EvolveCommand()
     command.request = request
@@ -86,7 +92,9 @@ async def test_evolve_command(environment):
     async with managed_transaction(request=request):
         ob = await container.async_get("foobar")
         assert hasattr(ob, "title") is True
+        assert hasattr(ob, "description") is True
         assert ob.title == ""
+        assert ob.description == "patata"
 
 
 async def test_registry(environment):
@@ -100,7 +108,7 @@ async def test_registry(environment):
         utility._update_curr_gen(5)
 
     registry = request.container_settings
-    registry[GENERATION_KEY] == 5
+    assert registry[GENERATION_KEY] == 5
 
 
 def test_register_decorator():

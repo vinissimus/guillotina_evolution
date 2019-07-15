@@ -1,5 +1,11 @@
 # Changelog
 
+0.2.1
+-----
+ - Improved tests
+ - Added some package metadata
+   [masipcat]
+
 0.2.0
 -----
  - Commit changes after each evolution
