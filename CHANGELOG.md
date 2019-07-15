@@ -1,5 +1,11 @@
 # Changelog
 
+0.2.0
+-----
+ - Commit changes after each evolution
+   [masipcat]
+
+
 0.1.2
 -----
  - Set greatest registered generation first time

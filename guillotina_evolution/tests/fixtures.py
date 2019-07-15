@@ -3,9 +3,9 @@ from guillotina.content import create_content_in_container
 from guillotina.interfaces import IAnnotations
 from guillotina.registry import Registry
 from guillotina.registry import REGISTRY_DATA_KEY
-from guillotina.transactions import managed_transaction
 from guillotina.tests import utils
 from guillotina.tests.fixtures import ContainerRequesterAsyncContextManager
+from guillotina.transactions import managed_transaction
 
 import json
 import pytest

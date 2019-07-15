@@ -22,4 +22,3 @@ class EvolveCommand(Command):
             registry = await annotations_container.async_get(REGISTRY_DATA_KEY)
             request.container_settings = registry
             await utility.evolve(container)
-            await request._txn.commit()

@@ -1,5 +1,6 @@
 from guillotina import configure
 from guillotina.interfaces import IContainer
+from guillotina.transactions import managed_transaction
 from guillotina.utils import get_current_request
 from guillotina_evolution.interfaces import IEvolutionUtility
 from typing import Awaitable
@@ -32,9 +33,11 @@ class EvolutionUtility(object):
         if len(evolvers) > 0:
             logger.info(f"Start evolving container {container}")
             for gen, evolver in evolvers:
-                logger.info(f"Evolving from generation '{cur_gen}' to '{gen}'")
-                await evolver(container)
-                self._update_curr_gen(gen)
+                async with managed_transaction(adopt_parent_txn=True):
+                    logger.info(f"Evolving from generation '{cur_gen}' to '{gen}'")
+                    await evolver(container)
+                    self._update_curr_gen(gen)
+                    cur_gen = self._get_curr_gen()
 
             logger.info(f"Container {container} is now at generation {gen}")
         else:

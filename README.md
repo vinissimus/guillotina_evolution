@@ -1,5 +1,8 @@
 # guillotina_evolution
 
+
+[![Build Status](https://travis-ci.org/vinissimus/guillotina_evolution.svg?branch=master)](https://travis-ci.org/vinissimus/guillotina_evolution) [![PyPI version](https://badge.fury.io/py/guillotina_evolution.svg)](https://badge.fury.io/py/guillotina_evolution) ![](https://img.shields.io/pypi/pyversions/guillotina_evolution.svg)
+
 Addon that provides evolutions/migrations to update the objects in your Guillotina containers.
 
 

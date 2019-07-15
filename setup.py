@@ -9,11 +9,11 @@ except IOError:
 
 setup(
     name='guillotina_evolution',
-    version="0.1.2",
+    version="0.2.0",
     description=' ',
     long_description=README,
     install_requires=[
-        'guillotina>=4.4.5',
+        'guillotina>=4.4.5,<5',
     ],
     author='Jordi Masip',
     author_email='jmasip@vinissimus.com',
