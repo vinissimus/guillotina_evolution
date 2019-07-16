@@ -9,10 +9,8 @@ Addon that provides evolutions/migrations to update the objects in your Guilloti
 ## Install
 
 ```console
-pip install git+https://github.com/vinissimus/guillotina_evolution.git
+pip install guillotina_evolution
 ```
-
-(Comming soon on pypi)
 
 
 ## Configure
