@@ -1,11 +1,11 @@
+from contextlib import asynccontextmanager
+from guillotina import task_vars
 from guillotina import testing
-from guillotina.content import create_content_in_container
-from guillotina.interfaces import IAnnotations
-from guillotina.registry import Registry
-from guillotina.registry import REGISTRY_DATA_KEY
+from guillotina.component import get_utility
 from guillotina.tests import utils
 from guillotina.tests.fixtures import ContainerRequesterAsyncContextManager
-from guillotina.transactions import managed_transaction
+from guillotina.tests.utils import get_container
+from guillotina_evolution.interfaces import IEvolutionUtility
 
 import json
 import pytest
@@ -29,33 +29,21 @@ class guillotina_evolution_Requester(ContainerRequesterAsyncContextManager):  # 
             "/db/guillotina/@addons",
             data=json.dumps({"id": "guillotina_evolution"}),
         )
+        utility = get_utility(IEvolutionUtility)
+        await get_container(db=self.requester.db)
+        await utility.install()
         return self.requester
 
 
 @pytest.fixture(scope="function")
-async def guillotina_evolution_requester(guillotina):
+async def my_requester(guillotina):
     return guillotina_evolution_Requester(guillotina)
 
 
-@pytest.fixture(scope="function")
-async def environment(guillotina):
-    root = guillotina.root
-    db = root["db"]
-
-    request = utils.get_mocked_request(db)
-    utils.login(request)
-
-    async with managed_transaction(request=request):
-        container = await create_content_in_container(
-            db, "Container", "container", request=request, title="Container"
-        )
-
-        request.container = container
-
-        annotations_container = IAnnotations(container)
-        await annotations_container.async_set(REGISTRY_DATA_KEY, Registry())
-        request.container_settings = await annotations_container.async_get(
-            REGISTRY_DATA_KEY
-        )
-
-    yield request, container
+@asynccontextmanager
+async def ctx(my_requester):
+    async with my_requester as requester:
+        task_vars.db.set(requester.db)
+        container = await get_container(db=requester.db)
+        utils.login()
+        yield container

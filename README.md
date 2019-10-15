@@ -1,9 +1,9 @@
 # guillotina_evolution
 
 
-[![Build Status](https://travis-ci.org/vinissimus/guillotina_evolution.svg?branch=master)](https://travis-ci.org/vinissimus/guillotina_evolution) [![PyPI version](https://badge.fury.io/py/guillotina-evolution.svg)](https://badge.fury.io/py/guillotina-evolution) ![](https://img.shields.io/pypi/pyversions/guillotina_evolution.svg)
+[![Build Status](https://travis-ci.org/vinissimus/guillotina_evolution.svg?branch=master)](https://travis-ci.org/vinissimus/guillotina_evolution) [![PyPI version](https://badge.fury.io/py/guillotina-evolution.svg)](https://badge.fury.io/py/guillotina-evolution) [![Codcov](https://codecov.io/gh/vinissimus/guillotina_evolution/branch/master/graph/badge.svg)](https://codecov.io/gh/vinissimus/guillotina_evolution/branch/master) ![](https://img.shields.io/pypi/pyversions/guillotina_evolution.svg)
 
-Addon that provides evolutions/migrations to update the objects in your Guillotina containers.
+Addon that provides evolutions/migrations to create or update objects in your Guillotina containers.
 
 
 ## Install
@@ -38,7 +38,7 @@ class ManageAddon(Addon):
     @classmethod
     async def install(cls, container, request):
         utility = get_utility(IEvolutionUtility)
-        utility._get_registry()  # initialize current generation with the greatest registered generation
+        utility.install()  # initialize current generation with the greatest registered generation
 
         # ...
 ```
@@ -62,7 +62,7 @@ from guillotina_evolution.utils import register_evolution
 async def evolver(container):
     async for item in container.async_items():
         item.title = item.title + ' (Migrated)'
-        item._p_register()
+        item.register()
 ```
 
 Update the `includeme()` of your app:

@@ -1,114 +1,70 @@
 from guillotina.component import get_utility
 from guillotina.content import create_content_in_container
-from guillotina.interfaces import IAnnotations
-from guillotina.registry import REGISTRY_DATA_KEY
-from guillotina.transactions import managed_transaction
-from guillotina_evolution.commands.evolve import EvolveCommand
+from guillotina.transactions import transaction
+from guillotina.utils import get_registry
+from guillotina_evolution.tests.fixtures import ctx
 from guillotina_evolution.utility import GENERATION_KEY
 from guillotina_evolution.utility import IEvolutionUtility
 from guillotina_evolution.utils import register_evolution
-from unittest.mock import Mock
 
 
-async def test_multiple_evolutions_at_once(loop, environment):
-    request, container = environment
+async def test_multiple_evolutions_at_once(loop, my_requester):
+    async with ctx(my_requester) as container:
+        # Create content in the container
+        async with transaction():
+            await create_content_in_container(container, "Item", id_="foobar")
+            ob = await container.async_get("foobar")
+            assert hasattr(ob, "title") is False
 
-    # Create content in the container
-    async with managed_transaction(request=request):
-        await create_content_in_container(container, "Item", id_="foobar")
-        ob = await container.async_get("foobar")
-        assert hasattr(ob, "title") is False
+        # Register a new evolution
+        async def ensure_all_items_have_attribute_title(container):
+            async for item in container.async_values():
+                item.title = ""
+                item.register()
 
-    # Register a new evolution
-    async def ensure_all_items_have_attribute_title(container):
-        async for item in container.async_values():
-            item.title = ""
-            item._p_register()
+        async def ensure_all_items_have_attribute_description(container):
+            async for item in container.async_values():
+                item.description = "patata"
+                item.register()
 
-    async def ensure_all_items_have_attribute_description(container):
-        async for item in container.async_values():
-            item.description = "patata"
-            item._p_register()
+        utility = get_utility(IEvolutionUtility)
 
-    utility = get_utility(IEvolutionUtility)
+        async with transaction():
+            await utility._update_curr_gen(0)
 
-    async with managed_transaction(request=request):
-        utility._update_curr_gen(0)
+        utility.register(1, ensure_all_items_have_attribute_title)
+        utility.register(2, ensure_all_items_have_attribute_description)
 
-    utility.register(1, ensure_all_items_have_attribute_title)
-    utility.register(2, ensure_all_items_have_attribute_description)
+        # Evolve
+        await utility.evolve(container)
 
-    # Evolve
-    await utility.evolve(container)
+        # Assert generation was updated on container registry
+        async with transaction():
+            registry = await get_registry()
+            assert registry[GENERATION_KEY] == 2
 
-    # Check objects after evolution
-    async with managed_transaction(request=request):
-        ob = await container.async_get("foobar")
-        assert hasattr(ob, "title") is True
-        assert hasattr(ob, "description") is True
-        assert ob.title == ""
-        assert ob.description == "patata"
-
-    # Assert generation was updated on container registry
-    async with managed_transaction(request=request):
-        annotations_container = IAnnotations(container)
-        registry = await annotations_container.async_get(REGISTRY_DATA_KEY)
-        assert registry[GENERATION_KEY] == 2
-
-
-async def test_evolve_command(environment):
-    request, container = environment
-
-    # Create content in the container
-    async with managed_transaction(request=request):
-        await create_content_in_container(container, "Item", id_="foobar")
-        ob = await container.async_get("foobar")
-        assert hasattr(ob, "title") is False
-
-    # Register a new evolution
-    async def ensure_all_items_have_attribute_title(container):
-        async for item in container.async_values():
-            item.title = ""
-            item._p_register()
-
-    async def ensure_all_items_have_attribute_description(container):
-        async for item in container.async_values():
-            item.description = "patata"
-            item._p_register()
-
-    utility = get_utility(IEvolutionUtility)
-
-    async with managed_transaction(request=request):
-        utility._update_curr_gen(0)
-
-    utility.register(1, ensure_all_items_have_attribute_title)
-    utility.register(2, ensure_all_items_have_attribute_description)
-
-    command = EvolveCommand()
-    command.request = request
-    await command.run(Mock, Mock, Mock)
-
-    # Check objects after evolution
-    async with managed_transaction(request=request):
-        ob = await container.async_get("foobar")
-        assert hasattr(ob, "title") is True
-        assert hasattr(ob, "description") is True
-        assert ob.title == ""
-        assert ob.description == "patata"
+        # Check objects after evolution
+        async with transaction():
+            ob = await container.async_get("foobar")
+            assert ob is not None
+            assert hasattr(ob, "title") is True
+            assert hasattr(ob, "description") is True
+            assert ob.title == ""
+            assert ob.description == "patata"
 
 
-async def test_registry(environment):
-    request, _ = environment
-    utility = get_utility(IEvolutionUtility)
+async def test_registry(my_requester):
+    async with ctx(my_requester):
+        utility = get_utility(IEvolutionUtility)
 
-    async with managed_transaction(request=request):
-        assert utility._get_curr_gen() == 0
+        async with transaction():
+            assert await utility._get_curr_gen() == 0
 
-    async with managed_transaction(request=request):
-        utility._update_curr_gen(5)
+        async with transaction():
+            await utility._update_curr_gen(5)
 
-    registry = request.container_settings
-    assert registry[GENERATION_KEY] == 5
+        registry = await get_registry()
+        assert registry[GENERATION_KEY] == 5
 
 
 def test_register_decorator():

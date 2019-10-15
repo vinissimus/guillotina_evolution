@@ -1,5 +1,10 @@
 # Changelog
 
+1.0.0
+-----
+ - Upgraded codebase for Guillotina 5
+   [masipcat]
+
 0.2.1
 -----
  - Improved tests

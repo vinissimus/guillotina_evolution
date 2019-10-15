@@ -1,7 +1,7 @@
 from guillotina import configure
 from guillotina.interfaces import IContainer
-from guillotina.transactions import managed_transaction
-from guillotina.utils import get_current_request
+from guillotina.transactions import transaction
+from guillotina.utils import get_registry
 from guillotina_evolution.interfaces import IEvolutionUtility
 from typing import Awaitable
 
@@ -20,6 +20,10 @@ class EvolutionUtility(object):
         self._loop = loop
         self._evolvers = {}
 
+    async def install(self):
+        async with transaction():
+            await self._init_registry()
+
     def register(self, gen: int, evolver: Awaitable):
         if gen in self._evolvers:
             raise Exception(f"Evolver for generation '{gen}' already exist")
@@ -27,17 +31,17 @@ class EvolutionUtility(object):
         self._evolvers[gen] = evolver
 
     async def evolve(self, container: IContainer):
-        cur_gen = self._get_curr_gen()
-        evolvers = self._get_evolvers(cur_gen)
+        async with transaction():
+            cur_gen = await self._get_curr_gen()
+            evolvers = self._get_evolvers(cur_gen)
 
         if len(evolvers) > 0:
             logger.info(f"Start evolving container {container}")
             for gen, evolver in evolvers:
-                async with managed_transaction(adopt_parent_txn=True):
+                async with transaction():
                     logger.info(f"Evolving from generation '{cur_gen}' to '{gen}'")
                     await evolver(container)
-                    self._update_curr_gen(gen)
-                    cur_gen = self._get_curr_gen()
+                    cur_gen = await self._update_curr_gen(gen)
 
             logger.info(f"Container {container} is now at generation {gen}")
         else:
@@ -50,22 +54,20 @@ class EvolutionUtility(object):
                 evolvers += [(gen, self._evolvers[gen])]
         return evolvers
 
-    def _get_curr_gen(self):
-        registry = self._get_registry()
+    async def _get_curr_gen(self):
+        registry = await get_registry()
         return registry[GENERATION_KEY]
 
-    def _update_curr_gen(self, gen):
-        registry = self._get_registry()
+    async def _update_curr_gen(self, gen):
+        registry = await get_registry()
         registry[GENERATION_KEY] = gen
-        registry._p_register()
+        registry.register()
+        return gen
 
-    def _get_registry(self):
-        request = get_current_request()
-        registry = request.container_settings
-        if GENERATION_KEY not in registry:  # first time we run guillotina_evolution
-            registry[GENERATION_KEY] = self._get_greatest_registered_gen()
-            registry._p_register()
-        return registry
+    async def _init_registry(self):
+        registry = await get_registry()
+        registry[GENERATION_KEY] = self._get_greatest_registered_gen()
+        registry.register()
 
     def _get_greatest_registered_gen(self):
         gens = sorted(self._evolvers.keys())
