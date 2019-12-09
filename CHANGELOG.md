@@ -1,5 +1,10 @@
 # Changelog
 
+1.1.0
+-----
+ - Added support for Guillotina 6
+   [masipcat]
+
 1.0.0
 -----
  - Upgraded codebase for Guillotina 5
