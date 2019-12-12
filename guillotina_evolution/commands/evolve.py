@@ -12,4 +12,5 @@ class EvolveCommand(Command):
         login()
         utility = get_utility(IEvolutionUtility)
         async for _, _, container in get_containers():
-            await utility.evolve(container)
+            if await utility.is_installed(container):
+                await utility.evolve(container)

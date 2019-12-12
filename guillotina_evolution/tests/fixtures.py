@@ -29,9 +29,6 @@ class guillotina_evolution_Requester(ContainerRequesterAsyncContextManager):  # 
             "/db/guillotina/@addons",
             data=json.dumps({"id": "guillotina_evolution"}),
         )
-        utility = get_utility(IEvolutionUtility)
-        await get_container(db=self.requester.db)
-        await utility.install()
         return self.requester
 
 
@@ -41,8 +38,13 @@ async def my_requester(guillotina):
 
 
 @asynccontextmanager
-async def ctx(my_requester):
+async def ctx(my_requester, install_evolution=True):
     async with my_requester as requester:
+        if install_evolution:
+            utility = get_utility(IEvolutionUtility)
+            await get_container(db=requester.db)
+            await utility.install()
+
         task_vars.db.set(requester.db)
         container = await get_container(db=requester.db)
         utils.login()

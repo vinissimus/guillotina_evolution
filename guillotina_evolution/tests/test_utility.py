@@ -74,3 +74,17 @@ def test_register_decorator():
 
     utility = get_utility(IEvolutionUtility)
     assert utility._evolvers == {1: migration_step}
+
+
+async def test_utility_is_installed(my_requester):
+    utility = get_utility(IEvolutionUtility)
+
+    async with ctx(my_requester) as container:
+        assert await utility.is_installed(container) is True
+
+
+async def test_utility_is_not_installed(my_requester):
+    utility = get_utility(IEvolutionUtility)
+
+    async with ctx(my_requester, install_evolution=False) as container:
+        assert await utility.is_installed(container) is False

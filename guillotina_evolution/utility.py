@@ -24,6 +24,14 @@ class EvolutionUtility(object):
         async with transaction():
             await self._init_registry()
 
+    async def is_installed(self, container):
+        registry = await get_registry()
+        try:
+            registry[GENERATION_KEY]
+            return True
+        except KeyError:
+            return False
+
     def register(self, gen: int, evolver: Awaitable):
         if gen in self._evolvers:
             raise Exception(f"Evolver for generation '{gen}' already exist")

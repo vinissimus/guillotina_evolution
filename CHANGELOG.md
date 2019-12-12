@@ -1,20 +1,29 @@
 # Changelog
 
+1.1.1
+-----
+ - Ensure container has guillotina_evolution installed before trying to evolve it
+   [masipcat]
+
+
 1.1.0
 -----
  - Added support for Guillotina 6
    [masipcat]
+
 
 1.0.0
 -----
  - Upgraded codebase for Guillotina 5
    [masipcat]
 
+
 0.2.1
 -----
  - Improved tests
  - Added some package metadata
    [masipcat]
+
 
 0.2.0
 -----
