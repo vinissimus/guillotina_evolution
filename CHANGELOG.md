@@ -1,5 +1,10 @@
 # Changelog
 
+1.1.2
+-----
+ - Execute futures after each migration
+   [masipcat]
+
 1.1.1
 -----
  - Ensure container has guillotina_evolution installed before trying to evolve it

@@ -9,7 +9,7 @@ except IOError:
 
 setup(
     name="guillotina_evolution",
-    version="1.1.1",
+    version="1.1.2",
     description=" ",
     long_description=README,
     long_description_content_type="text/markdown",

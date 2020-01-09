@@ -2,6 +2,8 @@ from guillotina import configure
 from guillotina.interfaces import IContainer
 from guillotina.transactions import transaction
 from guillotina.utils import get_registry
+from guillotina.utils.execute import clear_futures
+from guillotina.utils.execute import execute_futures
 from guillotina_evolution.interfaces import IEvolutionUtility
 from typing import Awaitable
 
@@ -50,6 +52,12 @@ class EvolutionUtility(object):
                     logger.info(f"Evolving from generation '{cur_gen}' to '{gen}'")
                     await evolver(container)
                     cur_gen = await self._update_curr_gen(gen)
+
+                logger.info("Executing futures")
+                task = execute_futures()
+                if task:
+                    await task
+                clear_futures()
 
             logger.info(f"Container {container} is now at generation {gen}")
         else:
